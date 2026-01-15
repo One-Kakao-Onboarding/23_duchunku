@@ -24,13 +24,21 @@ export const useGroupSelection = (initialGroup = '회사동료') => {
     );
   }, []);
 
-  const handleGenerateGroupMessages = useCallback(() => {
+  const handleGenerateGroupMessages = useCallback(async (generateMessageFn, selectedPeopleData, season) => {
     if (selectedPeople.length === 0) return;
     setGroupLoading(true);
-    setTimeout(() => {
-      setGroupLoading(false);
+
+    try {
+      // 모든 선택된 사람에 대해 메시지 생성
+      await Promise.all(
+        selectedPeopleData.map(person => generateMessageFn(person, season))
+      );
       setShowGroupResults(true);
-    }, 1000);
+    } catch (error) {
+      console.error('그룹 메시지 생성 실패:', error);
+    } finally {
+      setGroupLoading(false);
+    }
   }, [selectedPeople.length]);
 
   const clearSelection = useCallback(() => {
