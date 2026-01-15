@@ -1,7 +1,9 @@
 # 🌿 기억나나 (Remember NaNa)
 > **"까먹기 전에, 서운해지기 전에. 다시 시작하는 안부의 한마디."**
 
-![기억나나 메인 배너](./assets/main-banner.jpg)
+<p align="center">
+  <img src="./assets/main-banner.png" alt="기억나나 메인 배너" width="70%">
+</p>
 
 ---
 
