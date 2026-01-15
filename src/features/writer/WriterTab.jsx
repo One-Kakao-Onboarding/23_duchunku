@@ -31,6 +31,15 @@ const WriterTab = () => {
     setContext(recipientData[newRecipient].context);
   };
 
+  const handlePersonalGenerate = () => {
+    const personInfo = {
+      name: recipient,
+      tone: recipientData[recipient].tone,
+      context
+    };
+    generateMessage(personInfo, '오늘');
+  };
+
   const getPersonalMessage = () => {
     return getMessage(
       { name: recipient, tone: recipientData[recipient].tone, context },
@@ -42,6 +51,11 @@ const WriterTab = () => {
     return getMessage(person, season);
   };
 
+  const handleGroupGenerate = () => {
+    const selectedPeopleData = allPeople.filter(p => selectedPeople.includes(p.id));
+    handleGenerateGroupMessages(generateMessage, selectedPeopleData, autoSeason);
+  };
+
   return (
     <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-24">
       <PersonalWriter
@@ -51,7 +65,7 @@ const WriterTab = () => {
         loading={loading}
         onRecipientChange={handleRecipientChange}
         onContextChange={setContext}
-        onGenerate={generateMessage}
+        onGenerate={handlePersonalGenerate}
         getMessage={getPersonalMessage}
       />
 
@@ -64,7 +78,7 @@ const WriterTab = () => {
         showGroupResults={showGroupResults}
         onGroupChange={handleGroupChange}
         onTogglePerson={togglePerson}
-        onGenerate={handleGenerateGroupMessages}
+        onGenerate={handleGroupGenerate}
         getMessage={getGroupMessage}
       />
     </div>
