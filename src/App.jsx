@@ -220,6 +220,433 @@ const App = () => {
     </div>
   );
 
+  // 관계 온도 데이터 (연락 빈도 기반 온도 계산)
+  const relationshipTemperature = useMemo(() => {
+    return dashboardData.map(person => {
+      const ratio = (person.actual / person.ideal) * 100;
+      const temp = Math.min(100, Math.max(0, ratio));
+      let level = '';
+      let color = '';
+      let emoji = '';
+      let bgColor = '';
+
+      if (temp >= 81) {
+        level = '뜨거움';
+        color = 'text-red-500';
+        emoji = '❤️';
+        bgColor = 'bg-red-50';
+      } else if (temp >= 61) {
+        level = '따뜻함';
+        color = 'text-orange-500';
+        emoji = '🔥';
+        bgColor = 'bg-orange-50';
+      } else if (temp >= 31) {
+        level = '미지근함';
+        color = 'text-gray-500';
+        emoji = '💧';
+        bgColor = 'bg-gray-50';
+      } else {
+        level = '차가움';
+        color = 'text-blue-500';
+        emoji = '🧊';
+        bgColor = 'bg-blue-50';
+      }
+
+      const lastContact = temp >= 80 ? '오늘' : temp >= 60 ? '3일 전' : temp >= 30 ? '1주일 전' : '2주일 전';
+      const responseRate = Math.floor(60 + (temp * 0.4));
+
+      return {
+        ...person,
+        temperature: Math.floor(temp),
+        level,
+        color,
+        emoji,
+        bgColor,
+        lastContact,
+        responseRate
+      };
+    });
+  }, [dashboardData]);
+
+  const renderThermometer = () => (
+    <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-24">
+      <div className="bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-3xl shadow-sm border border-pink-100">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-black text-gray-800 flex items-center">
+            <Thermometer size={24} className="mr-2 text-red-500" />
+            관계 온도계
+          </h2>
+          <Heart size={20} className="text-red-400 animate-pulse" />
+        </div>
+        <p className="text-xs text-gray-600">연락 빈도로 측정한 관계의 따뜻함</p>
+      </div>
+
+      <div className="space-y-4">
+        {relationshipTemperature.map((person, idx) => (
+          <div key={idx} className={`${person.bgColor} p-6 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-md border-2 border-white">
+                  {person.emoji}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">{person.name}</h3>
+                  <p className={`text-xs font-bold ${person.color}`}>{person.level}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-3xl font-black ${person.color}`}>{person.temperature}°</div>
+                <div className="text-[9px] text-gray-400 font-bold">관계 온도</div>
+              </div>
+            </div>
+
+            {/* 온도 바 */}
+            <div className="mb-4">
+              <div className="h-3 bg-white/50 rounded-full overflow-hidden shadow-inner">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ${
+                    person.temperature >= 81 ? 'bg-gradient-to-r from-red-400 to-red-600' :
+                    person.temperature >= 61 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
+                    person.temperature >= 31 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
+                    'bg-gradient-to-r from-blue-400 to-blue-600'
+                  }`}
+                  style={{ width: `${person.temperature}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* 상세 정보 */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-white/60 p-3 rounded-xl text-center">
+                <div className="text-xs text-gray-500 mb-1">실제 연락</div>
+                <div className="text-lg font-black text-gray-800">{person.actual}회</div>
+              </div>
+              <div className="bg-white/60 p-3 rounded-xl text-center">
+                <div className="text-xs text-gray-500 mb-1">목표 연락</div>
+                <div className="text-lg font-black text-gray-800">{person.ideal}회</div>
+              </div>
+              <div className="bg-white/60 p-3 rounded-xl text-center">
+                <div className="text-xs text-gray-500 mb-1">응답률</div>
+                <div className="text-lg font-black text-gray-800">{person.responseRate}%</div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1 text-gray-600">
+                <Clock size={12} />
+                <span>마지막 연락: {person.lastContact}</span>
+              </div>
+              {person.temperature < 60 && (
+                <button
+                  onClick={() => setActiveTab('writer')}
+                  className="bg-[#3C1E1E] text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow-md active:scale-95 transition-all"
+                >
+                  <Send size={12} /> 안부 보내기
+                </button>
+              )}
+            </div>
+
+            {/* 경고 메시지 */}
+            {person.temperature < 40 && (
+              <div className="mt-4 bg-white/80 p-3 rounded-xl border border-blue-200">
+                <p className="text-xs text-gray-700 flex items-center gap-2">
+                  <span className="text-base">💡</span>
+                  <span className="font-medium">장기 미연락 상태입니다. 관계를 따뜻하게 유지해보세요!</span>
+                </p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 온도 가이드 */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <h3 className="font-bold text-sm text-gray-800 mb-4 flex items-center">
+          <Sparkles size={16} className="mr-2 text-yellow-500" />
+          온도 레벨 가이드
+        </h3>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-red-50 rounded-full flex items-center justify-center text-sm">❤️</div>
+            <div className="flex-1">
+              <div className="text-xs font-bold text-gray-700">81-100° 뜨거움</div>
+              <div className="text-[10px] text-gray-500">활발한 소통, 건강한 관계 유지 중</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-orange-50 rounded-full flex items-center justify-center text-sm">🔥</div>
+            <div className="flex-1">
+              <div className="text-xs font-bold text-gray-700">61-80° 따뜻함</div>
+              <div className="text-[10px] text-gray-500">적절한 연락 빈도, 좋은 관계</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-sm">💧</div>
+            <div className="flex-1">
+              <div className="text-xs font-bold text-gray-700">31-60° 미지근함</div>
+              <div className="text-[10px] text-gray-500">연락이 필요한 시점, 안부 추천</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center text-sm">🧊</div>
+            <div className="flex-1">
+              <div className="text-xs font-bold text-gray-700">0-30° 차가움</div>
+              <div className="text-[10px] text-gray-500">장기 미연락, 즉시 연락 권장</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 선물 추천 데이터 (대화 맥락 기반)
+  const giftRecommendations = useMemo(() => {
+    const gifts = [
+      {
+        person: '아빠',
+        personIcon: '👨',
+        gifts: [
+          {
+            id: 'g1',
+            name: '프리미엄 무릎 보호대',
+            category: '건강',
+            price: '39,000원',
+            reason: '최근 무릎이 아프다고 하셨던 점을 고려한 추천',
+            image: '🦵',
+            rating: 4.8,
+            link: '#'
+          },
+          {
+            id: 'g2',
+            name: '관절 영양제 세트',
+            category: '건강',
+            price: '55,000원',
+            reason: '관절 건강 관리를 위한 맞춤 추천',
+            image: '💊',
+            rating: 4.6,
+            link: '#'
+          }
+        ]
+      },
+      {
+        person: '엄마',
+        personIcon: '👩',
+        gifts: [
+          {
+            id: 'g3',
+            name: '고급 화장품 세트',
+            category: '뷰티',
+            price: '89,000원',
+            reason: '동창회 모임에 자주 가시니 피부 관리 제품 추천',
+            image: '💄',
+            rating: 4.9,
+            link: '#'
+          },
+          {
+            id: 'g4',
+            name: '명품 스카프',
+            category: '패션',
+            price: '120,000원',
+            reason: '모임에서 돋보이는 우아한 액세서리',
+            image: '🧣',
+            rating: 4.7,
+            link: '#'
+          }
+        ]
+      },
+      {
+        person: '동생',
+        personIcon: '📚',
+        gifts: [
+          {
+            id: 'g5',
+            name: '스타벅스 기프티콘',
+            category: '카페',
+            price: '50,000원',
+            reason: '자격증 시험 준비로 카페에서 공부 많이 할 것 같아요',
+            image: '☕',
+            rating: 5.0,
+            link: '#'
+          },
+          {
+            id: 'g6',
+            name: '집중력 향상 영양제',
+            category: '건강',
+            price: '35,000원',
+            reason: '시험 준비 기간 컨디션 관리를 위한 추천',
+            image: '🧠',
+            rating: 4.5,
+            link: '#'
+          }
+        ]
+      },
+      {
+        person: '남자친구',
+        personIcon: '❤️',
+        gifts: [
+          {
+            id: 'g7',
+            name: '커플 향수 세트',
+            category: '향수',
+            price: '150,000원',
+            reason: '1000일 기념 특별한 선물',
+            image: '🌹',
+            rating: 4.9,
+            link: '#'
+          },
+          {
+            id: 'g8',
+            name: '커플 시계',
+            category: '패션',
+            price: '280,000원',
+            reason: '함께한 시간을 기억하는 의미있는 선물',
+            image: '⌚',
+            rating: 4.8,
+            link: '#'
+          }
+        ]
+      }
+    ];
+    return gifts;
+  }, []);
+
+  const [selectedGiftPerson, setSelectedGiftPerson] = useState('아빠');
+
+  const renderGift = () => {
+    const currentPersonGifts = giftRecommendations.find(p => p.person === selectedGiftPerson);
+
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-24">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-3xl shadow-sm border border-purple-100">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-black text-gray-800 flex items-center">
+              <Gift size={24} className="mr-2 text-purple-500" />
+              센스있게 나나
+            </h2>
+            <Sparkles size={20} className="text-purple-400 animate-pulse" />
+          </div>
+          <p className="text-xs text-gray-600">대화 맥락으로 파악한 맞춤 선물 추천</p>
+        </div>
+
+        {/* 사람 선택 */}
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+          <label className="text-xs font-bold text-gray-500 block mb-3">선물 받을 사람</label>
+          <div className="grid grid-cols-4 gap-2">
+            {giftRecommendations.map((personData) => (
+              <button
+                key={personData.person}
+                onClick={() => setSelectedGiftPerson(personData.person)}
+                className={`p-3 rounded-2xl transition-all ${
+                  selectedGiftPerson === personData.person
+                    ? 'bg-purple-100 border-2 border-purple-400 shadow-md'
+                    : 'bg-gray-50 border-2 border-transparent'
+                }`}
+              >
+                <div className="text-2xl mb-1">{personData.personIcon}</div>
+                <div className={`text-[10px] font-bold ${
+                  selectedGiftPerson === personData.person ? 'text-purple-700' : 'text-gray-500'
+                }`}>
+                  {personData.person}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* AI 분석 인사이트 */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-5 rounded-3xl border border-purple-100">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-lg flex-shrink-0">
+              🤖
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xs font-bold text-purple-900 mb-2">AI 맥락 분석 결과</h3>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                {currentPersonGifts?.person === '아빠' && '"무릎이 아프다"는 대화에서 건강 관심사를 파악했어요.'}
+                {currentPersonGifts?.person === '엄마' && '"동창회 모임"을 자주 가시는 점에서 외모 관리에 관심이 있으실 것 같아요.'}
+                {currentPersonGifts?.person === '동생' && '"자격증 시험 준비" 중이라 카페에서 공부하거나 집중력이 필요할 것 같아요.'}
+                {currentPersonGifts?.person === '남자친구' && '"1000일 기념일"이라는 특별한 날을 위한 의미있는 선물을 추천해요.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 추천 선물 카드 */}
+        <div className="space-y-4">
+          {currentPersonGifts?.gifts.map((gift) => (
+            <div key={gift.id} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-all">
+              <div className="flex gap-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl flex items-center justify-center text-4xl shadow-inner flex-shrink-0">
+                  {gift.image}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="font-bold text-base text-gray-800 mb-1">{gift.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">
+                          {gift.category}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-yellow-400 text-xs">★</span>
+                          <span className="text-xs font-bold text-gray-600">{gift.rating}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-600 mb-3 leading-relaxed flex items-start gap-2">
+                    <span className="text-sm flex-shrink-0">💡</span>
+                    <span>{gift.reason}</span>
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-lg font-black text-[#3C1E1E]">{gift.price}</div>
+                    <div className="flex gap-2">
+                      <button className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all">
+                        상세보기
+                      </button>
+                      <button className="bg-[#FEE500] text-[#3C1E1E] px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-1">
+                        <Gift size={14} />
+                        선물하기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 추가 팁 */}
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <h3 className="font-bold text-sm text-gray-800 mb-4 flex items-center">
+            <Heart size={16} className="mr-2 text-red-400" />
+            선물 타이밍 TIP
+          </h3>
+          <div className="space-y-3 text-xs text-gray-600">
+            <div className="flex items-start gap-2">
+              <span className="text-base flex-shrink-0">🎯</span>
+              <p className="leading-relaxed">
+                <span className="font-bold text-gray-800">장기 미연락 관계</span>에게는 선물이 자연스러운 연결 고리가 될 수 있어요.
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-base flex-shrink-0">💝</span>
+              <p className="leading-relaxed">
+                <span className="font-bold text-gray-800">특별한 날</span>이 없어도 "생각나서"라는 말과 함께 보내면 더 감동적이에요.
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-base flex-shrink-0">📦</span>
+              <p className="leading-relaxed">
+                선물과 함께 <span className="font-bold text-gray-800">AI가 생성한 안부 메시지</span>를 보내면 완벽해요!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderWriter = () => (
     <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-24">
       {/* 1. 기억해 나나 (1:1) */}
@@ -388,14 +815,17 @@ const App = () => {
         </header>
 
         <main className="flex-1 px-5 pt-4 overflow-y-auto no-scrollbar">
-          {activeTab === 'home' ? renderHome() : renderWriter()}
+          {activeTab === 'home' && renderHome()}
+          {activeTab === 'writer' && renderWriter()}
+          {activeTab === 'thermometer' && renderThermometer()}
+          {activeTab === 'gift' && renderGift()}
         </main>
 
         <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-[390px] bg-[#3C1E1E]/95 backdrop-blur-md rounded-[32px] p-2 flex justify-between items-center shadow-2xl z-20">
           <button onClick={() => setActiveTab('home')} className={`flex-1 py-3 flex flex-col items-center gap-1 transition-all ${activeTab === 'home' ? 'text-[#FEE500]' : 'text-white/40'}`}><Home size={20} /><span className="text-[9px] font-bold">홈</span></button>
           <button onClick={() => setActiveTab('writer')} className={`flex-1 py-3 flex flex-col items-center gap-1 transition-all ${activeTab === 'writer' ? 'text-[#FEE500]' : 'text-white/40'}`}><MessageSquare size={20} /><span className="text-[9px] font-bold">AI 비서</span></button>
-          <button className="flex-1 py-3 flex flex-col items-center gap-1 text-white/40"><Thermometer size={20} /><span className="text-[9px] font-bold">온도계</span></button>
-          <button className="flex-1 py-3 flex flex-col items-center gap-1 text-white/40"><Gift size={20} /><span className="text-[9px] font-bold">선물</span></button>
+          <button onClick={() => setActiveTab('thermometer')} className={`flex-1 py-3 flex flex-col items-center gap-1 transition-all ${activeTab === 'thermometer' ? 'text-[#FEE500]' : 'text-white/40'}`}><Thermometer size={20} /><span className="text-[9px] font-bold">온도계</span></button>
+          <button onClick={() => setActiveTab('gift')} className={`flex-1 py-3 flex flex-col items-center gap-1 transition-all ${activeTab === 'gift' ? 'text-[#FEE500]' : 'text-white/40'}`}><Gift size={20} /><span className="text-[9px] font-bold">선물</span></button>
         </nav>
         <div className="h-1 w-32 bg-gray-300 rounded-full mx-auto mb-2 absolute bottom-1 left-1/2 -translate-x-1/2 opacity-20"></div>
       </div>
