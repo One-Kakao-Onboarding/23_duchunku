@@ -8,15 +8,17 @@ import { useTabNavigation } from './hooks/useTabNavigation';
 
 const App = () => {
   const { activeTab, setActiveTab } = useTabNavigation('home');
+  const [selectedRecipient, setSelectedRecipient] = React.useState(null);
 
-  const handleNavigateToWriter = () => {
+  const handleNavigateToWriter = (recipient = null) => {
+    setSelectedRecipient(recipient);
     setActiveTab('writer');
   };
 
   return (
     <Layout activeTab={activeTab} onTabChange={setActiveTab}>
       {activeTab === 'home' && <HomeTab onNavigateToWriter={handleNavigateToWriter} />}
-      {activeTab === 'writer' && <WriterTab />}
+      {activeTab === 'writer' && <WriterTab initialRecipient={selectedRecipient} />}
       {activeTab === 'thermometer' && <ThermometerTab onNavigateToWriter={handleNavigateToWriter} />}
       {activeTab === 'gift' && <GiftTab />}
     </Layout>
