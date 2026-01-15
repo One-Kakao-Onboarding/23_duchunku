@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from './components/layout/Layout';
 import HomeTab from './features/home/HomeTab';
 import WriterTab from './features/writer/WriterTab';
-import ThermometerTab from './features/thermometer/ThermometerTab';
+import GardenTab from './features/garden/GardenTab';
 import GiftTab from './features/gift/GiftTab';
 import { useTabNavigation } from './hooks/useTabNavigation';
 
@@ -19,7 +19,7 @@ const App = () => {
     <Layout activeTab={activeTab} onTabChange={setActiveTab}>
       {activeTab === 'home' && <HomeTab onNavigateToWriter={handleNavigateToWriter} />}
       {activeTab === 'writer' && <WriterTab initialRecipient={selectedRecipient} />}
-      {activeTab === 'thermometer' && <ThermometerTab onNavigateToWriter={handleNavigateToWriter} />}
+      {activeTab === 'garden' && <GardenTab onNavigateToWriter={handleNavigateToWriter} />}
       {activeTab === 'gift' && <GiftTab />}
     </Layout>
   );
