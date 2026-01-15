@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, MessageSquare, Thermometer, Gift } from 'lucide-react';
+import { Home, MessageSquare, Flower2, Gift } from 'lucide-react';
 
 const Navigation = ({ activeTab, onTabChange }) => {
   return (
@@ -23,13 +23,13 @@ const Navigation = ({ activeTab, onTabChange }) => {
         <span className="text-[9px] font-bold">AI 비서</span>
       </button>
       <button
-        onClick={() => onTabChange('thermometer')}
+        onClick={() => onTabChange('garden')}
         className={`flex-1 py-3 flex flex-col items-center gap-1 transition-all ${
-          activeTab === 'thermometer' ? 'text-[#FEE500]' : 'text-white/40'
+          activeTab === 'garden' ? 'text-[#FEE500]' : 'text-white/40'
         }`}
       >
-        <Thermometer size={20} />
-        <span className="text-[9px] font-bold">온도계</span>
+        <Flower2 size={20} />
+        <span className="text-[9px] font-bold">나의 정원</span>
       </button>
       <button
         onClick={() => onTabChange('gift')}

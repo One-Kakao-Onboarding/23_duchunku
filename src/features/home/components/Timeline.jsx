@@ -37,7 +37,7 @@ const Timeline = ({ timelineData, onNavigateToWriter }) => {
                 <h4 className="font-bold text-sm text-gray-800 mb-1">{item.title}</h4>
                 <p className="text-[11px] text-gray-500 leading-tight mb-3">{item.desc}</p>
                 <button
-                  onClick={onNavigateToWriter}
+                  onClick={() => onNavigateToWriter(item.recipient)}
                   className="flex items-center text-[10px] font-bold text-[#3C1E1E] bg-white px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm"
                 >
                   안부 보내기 <ChevronRight size={10} className="ml-1" />

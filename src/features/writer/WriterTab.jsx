@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PersonalWriter from './components/PersonalWriter';
 import GroupWriter from './components/GroupWriter';
 import { recipientData } from '@/data/recipients';
@@ -7,13 +7,24 @@ import { useAutoSeason } from '@/hooks/useAutoSeason';
 import { useMessageGenerator } from './hooks/useMessageGenerator';
 import { useGroupSelection } from './hooks/useGroupSelection';
 
-const WriterTab = () => {
+const WriterTab = ({ initialRecipient = null }) => {
   const autoSeason = useAutoSeason();
 
+  // initialRecipient이 있으면 그것을 사용, 없으면 '아빠'
+  const defaultRecipient = initialRecipient && recipientData[initialRecipient] ? initialRecipient : '아빠';
+
   // PersonalWriter 상태
-  const [recipient, setRecipient] = useState('아빠');
-  const [context, setContext] = useState(recipientData['아빠'].context);
+  const [recipient, setRecipient] = useState(defaultRecipient);
+  const [context, setContext] = useState(recipientData[defaultRecipient].context);
   const { loading, generateMessage, getMessage } = useMessageGenerator();
+
+  // initialRecipient가 변경되면 recipient와 context 업데이트
+  useEffect(() => {
+    if (initialRecipient && recipientData[initialRecipient]) {
+      setRecipient(initialRecipient);
+      setContext(recipientData[initialRecipient].context);
+    }
+  }, [initialRecipient]);
 
   // GroupWriter 상태
   const {
