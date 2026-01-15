@@ -79,10 +79,10 @@ const App = () => {
 
   // 대시보드 및 타임라인 데이터 (기존 유지)
   const dashboardData = [
-    { name: '엄마', actual: 3, ideal: 7 },
-    { name: '아빠', actual: 1, ideal: 5 },
-    { name: '동생', actual: 2, ideal: 3 },
-    { name: '남자친구', actual: 15, ideal: 10 },
+    { name: '엄마', actual: 3, ideal: 7, image: '/profile_image/mother.png' },
+    { name: '아빠', actual: 1, ideal: 5, image: '/profile_image/father.png' },
+    { name: '동생', actual: 2, ideal: 3, image: '/profile_image/borther.png' },
+    { name: '남자친구', actual: 15, ideal: 10, image: '/profile_image/default1.png' },
   ];
 
   const timelineData = [
@@ -93,18 +93,18 @@ const App = () => {
 
   // 전체 인물 데이터 (그룹화 및 말투 데이터 반영)
   const allPeople = [
-    { id: 'p1', name: '김부장님', group: '회사동료', context: '최근 등산 모임', icon: '⛰️', tone: 'formal' },
-    { id: 'p2', name: '이차장님', group: '회사동료', context: '골프 라운딩', icon: '🏌️‍♂️', tone: 'formal' },
-    { id: 'p3', name: '박대리님', group: '회사동료', context: '프로젝트 마감', icon: '💻', tone: 'formal' },
-    { id: 'p4', name: '최주임님', group: '회사동료', context: '신입사원 연수', icon: '✨', tone: 'formal' },
-    { id: 'p5', name: '아빠', group: '가족', context: '무릎 건강 관리', icon: '👨', tone: 'polite' },
-    { id: 'p6', name: '엄마', group: '가족', context: '동창회 모임', icon: '👩', tone: 'polite' },
-    { id: 'p7', name: '민수', group: '친한친구', context: '이직 준비 중', icon: '👦', tone: 'casual' },
-    { id: 'p8', name: '지혜', group: '친한친구', context: '강아지 입양', icon: '👧', tone: 'casual' },
+    { id: 'p1', name: '김부장님', group: '회사동료', context: '최근 등산 모임', icon: '⛰️', image: '/profile_image/default1.png', tone: 'formal' },
+    { id: 'p2', name: '이차장님', group: '회사동료', context: '골프 라운딩', icon: '🏌️‍♂️', image: '/profile_image/default2.png', tone: 'formal' },
+    { id: 'p3', name: '박대리님', group: '회사동료', context: '프로젝트 마감', icon: '💻', image: '/profile_image/default1.png', tone: 'formal' },
+    { id: 'p4', name: '최주임님', group: '회사동료', context: '신입사원 연수', icon: '✨', image: '/profile_image/default2.png', tone: 'formal' },
+    { id: 'p5', name: '아빠', group: '가족', context: '무릎 건강 관리', icon: '👨', image: '/profile_image/father.png', tone: 'polite' },
+    { id: 'p6', name: '엄마', group: '가족', context: '동창회 모임', icon: '👩', image: '/profile_image/mother.png', tone: 'polite' },
+    { id: 'p7', name: '민수', group: '친한친구', context: '이직 준비 중', icon: '👦', image: '/profile_image/borther.png', tone: 'casual' },
+    { id: 'p8', name: '지혜', group: '친한친구', context: '강아지 입양', icon: '👧', image: '/profile_image/sister.png', tone: 'casual' },
   ];
 
   // 2. 말투 및 맥락 기반 메시지 생성 로직 (Persona Cloning)
-  const generateAImessage = useCallback((person, season, isGroup = false, index = 0) => {
+  const generateAImessage = useCallback((person, season, index = 0) => {
     const tone = person.tone || 'polite';
     const name = person.name;
     const ctx = person.context;
@@ -311,8 +311,8 @@ const App = () => {
           <div key={idx} className={`${person.bgColor} p-6 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-md border-2 border-white">
-                  {person.emoji}
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-md border-2 border-white">
+                  <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-gray-800">{person.name}</h3>
@@ -424,48 +424,68 @@ const App = () => {
     </div>
   );
 
-  // 선물 추천 데이터 (대화 맥락 기반)
+  // 선물 추천 데이터 (대화 맥락 기반 - 동적 생성)
   const giftRecommendations = useMemo(() => {
-    const gifts = [
+    // relationshipTemperature 데이터 활용하여 동적으로 추천 우선순위 계산
+    const recommendations = [
       {
         person: '아빠',
-        personIcon: '👨',
+        personId: 'p5',
+        avatar: '👨',
+        image: '/profile_image/father.png',
+        avatarBg: 'bg-blue-100',
+        priority: 85, // 온도가 낮아서 우선순위 높음
+        recommendReason: '2주째 연락이 없어요 (온도: 20°)',
+        recentContext: '최근 무릎이 아프다고 하셨음',
+        lastContact: '2주일 전',
+        temperature: 20,
         gifts: [
           {
             id: 'g1',
             name: '프리미엄 무릎 보호대',
             category: '건강',
             price: '39,000원',
-            reason: '최근 무릎이 아프다고 하셨던 점을 고려한 추천',
+            reason: '"무릎이 아프다"는 대화에서 건강 관심사 파악',
             image: '🦵',
             rating: 4.8,
-            link: '#'
+            link: '#',
+            aiInsight: '장기 미연락 상태에서 건강 관련 선물은 관심과 배려를 자연스럽게 전달할 수 있어요.'
           },
           {
             id: 'g2',
             name: '관절 영양제 세트',
             category: '건강',
             price: '55,000원',
-            reason: '관절 건강 관리를 위한 맞춤 추천',
+            reason: '관절 건강 관리에 실질적인 도움',
             image: '💊',
             rating: 4.6,
-            link: '#'
+            link: '#',
+            aiInsight: '건강 관련 선물은 오랜 공백을 메우는 좋은 명분이 됩니다.'
           }
         ]
       },
       {
         person: '엄마',
-        personIcon: '👩',
+        personId: 'p6',
+        avatar: '👩',
+        image: '/profile_image/mother.png',
+        avatarBg: 'bg-pink-100',
+        priority: 60,
+        recommendReason: '동창회 시즌, 선물로 응원해보세요',
+        recentContext: '어제 고등학교 동창회 다녀오심',
+        lastContact: '3일 전',
+        temperature: 43,
         gifts: [
           {
             id: 'g3',
             name: '고급 화장품 세트',
             category: '뷰티',
             price: '89,000원',
-            reason: '동창회 모임에 자주 가시니 피부 관리 제품 추천',
+            reason: '동창회 모임 자주 가시니까 피부 관리 제품',
             image: '💄',
             rating: 4.9,
-            link: '#'
+            link: '#',
+            aiInsight: '사교 활동이 많은 분께는 외적인 아름다움을 가꾸는 선물이 좋아요.'
           },
           {
             id: 'g4',
@@ -475,39 +495,58 @@ const App = () => {
             reason: '모임에서 돋보이는 우아한 액세서리',
             image: '🧣',
             rating: 4.7,
-            link: '#'
+            link: '#',
+            aiInsight: '패션 소품은 일상에서 자주 사용하며 선물한 사람을 떠올리게 해요.'
           }
         ]
       },
       {
         person: '동생',
-        personIcon: '📚',
+        personId: 'p9',
+        avatar: '👦',
+        image: '/profile_image/borther.png',
+        avatarBg: 'bg-green-100',
+        priority: 90,
+        recommendReason: '이번 주말 중요한 시험! 응원 필요',
+        recentContext: '자격증 시험 준비 중 (D-3)',
+        lastContact: '1주일 전',
+        temperature: 33,
         gifts: [
           {
             id: 'g5',
             name: '스타벅스 기프티콘',
             category: '카페',
             price: '50,000원',
-            reason: '자격증 시험 준비로 카페에서 공부 많이 할 것 같아요',
+            reason: '시험 준비로 카페에서 공부 많이 할 것 같아요',
             image: '☕',
             rating: 5.0,
-            link: '#'
+            link: '#',
+            aiInsight: '카페 기프티콘은 부담 없이 응원의 마음을 전할 수 있는 실용적인 선물이에요.'
           },
           {
             id: 'g6',
             name: '집중력 향상 영양제',
             category: '건강',
             price: '35,000원',
-            reason: '시험 준비 기간 컨디션 관리를 위한 추천',
+            reason: '시험 기간 컨디션 관리 필수템',
             image: '🧠',
             rating: 4.5,
-            link: '#'
+            link: '#',
+            aiInsight: '중요한 순간을 앞둔 사람에게는 실질적인 도움이 되는 선물이 좋아요.'
           }
         ]
       },
       {
         person: '남자친구',
-        personIcon: '❤️',
+        personId: 'p10',
+        avatar: '❤️',
+        image: '/profile_image/default1.png',
+        avatarBg: 'bg-red-100',
+        priority: 95,
+        recommendReason: '1000일 기념일이 다가와요! (D-2)',
+        recentContext: '만난 지 998일째, 특별한 날 준비',
+        lastContact: '오늘',
+        temperature: 100,
         gifts: [
           {
             id: 'g7',
@@ -517,7 +556,8 @@ const App = () => {
             reason: '1000일 기념 특별한 선물',
             image: '🌹',
             rating: 4.9,
-            link: '#'
+            link: '#',
+            aiInsight: '특별한 날에는 감성적이고 기억에 남을 선물이 완벽해요.'
           },
           {
             id: 'g8',
@@ -527,12 +567,87 @@ const App = () => {
             reason: '함께한 시간을 기억하는 의미있는 선물',
             image: '⌚',
             rating: 4.8,
-            link: '#'
+            link: '#',
+            aiInsight: '시계는 매일 착용하며 소중한 순간을 떠올리게 하는 최고의 기념 선물이에요.'
+          }
+        ]
+      },
+      {
+        person: '김부장님',
+        personId: 'p1',
+        avatar: '👔',
+        image: '/profile_image/default1.png',
+        avatarBg: 'bg-gray-100',
+        priority: 70,
+        recommendReason: '연말 감사 인사 시즌입니다',
+        recentContext: '최근 프로젝트에서 많은 도움 주심',
+        lastContact: '5일 전',
+        temperature: 55,
+        gifts: [
+          {
+            id: 'g9',
+            name: '프리미엄 와인 세트',
+            category: '주류',
+            price: '120,000원',
+            reason: '와인 좋아하신다고 등산 모임에서 언급하심',
+            image: '🍷',
+            rating: 4.7,
+            link: '#',
+            aiInsight: '직장 상사에게는 품격있고 실용적인 선물이 적합해요.'
+          },
+          {
+            id: 'g10',
+            name: '등산 장비 세트',
+            category: '스포츠',
+            price: '85,000원',
+            reason: '등산을 즐기신다는 대화 맥락 포착',
+            image: '⛰️',
+            rating: 4.6,
+            link: '#',
+            aiInsight: '상대방의 취미를 존중하는 선물은 깊은 인상을 남겨요.'
+          }
+        ]
+      },
+      {
+        person: '민수',
+        personId: 'p7',
+        avatar: '🧑',
+        image: '/profile_image/borther.png',
+        avatarBg: 'bg-purple-100',
+        priority: 75,
+        recommendReason: '이직 준비 중, 응원이 필요할 때',
+        recentContext: '최근 이직 준비로 스트레스 많다고 함',
+        lastContact: '4일 전',
+        temperature: 47,
+        gifts: [
+          {
+            id: 'g11',
+            name: '고급 명함 케이스',
+            category: '패션',
+            price: '65,000원',
+            reason: '새 출발을 응원하는 실용적인 선물',
+            image: '💼',
+            rating: 4.5,
+            link: '#',
+            aiInsight: '새로운 시작을 앞둔 친구에게는 응원의 의미가 담긴 선물이 좋아요.'
+          },
+          {
+            id: 'g12',
+            name: '스트레스 해소 안마기',
+            category: '건강',
+            price: '45,000원',
+            reason: '이직 준비 스트레스 해소에 도움',
+            image: '💆',
+            rating: 4.4,
+            link: '#',
+            aiInsight: '힘든 시기를 보내는 친구에게는 실질적인 위로가 되는 선물이 효과적이에요.'
           }
         ]
       }
     ];
-    return gifts;
+
+    // 우선순위 순으로 정렬
+    return recommendations.sort((a, b) => b.priority - a.priority);
   }, []);
 
   const [selectedGiftPerson, setSelectedGiftPerson] = useState('아빠');
@@ -550,58 +665,125 @@ const App = () => {
             </h2>
             <Sparkles size={20} className="text-purple-400 animate-pulse" />
           </div>
-          <p className="text-xs text-gray-600">대화 맥락으로 파악한 맞춤 선물 추천</p>
+          <p className="text-xs text-gray-600">대화 맥락 AI 분석으로 똑똑한 선물 추천</p>
         </div>
 
-        {/* 사람 선택 */}
+        {/* AI 추천 알림 */}
+        <div className="bg-white p-5 rounded-3xl shadow-sm border-2 border-purple-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-full -mr-10 -mt-10 opacity-50"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} className="text-purple-500" />
+              <span className="text-xs font-black text-purple-900">지금 선물하면 좋을 사람 {giftRecommendations.length}명</span>
+            </div>
+            <p className="text-[11px] text-gray-600">장기 미연락, 특별한 날, 최근 이벤트를 고려해 우선순위를 계산했어요</p>
+          </div>
+        </div>
+
+        {/* 사람 선택 - 카톡 프로필 스타일 */}
         <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-          <label className="text-xs font-bold text-gray-500 block mb-3">선물 받을 사람</label>
-          <div className="grid grid-cols-4 gap-2">
-            {giftRecommendations.map((personData) => (
+          <div className="flex items-center justify-between mb-4">
+            <label className="text-xs font-bold text-gray-800">추천 순위별 보기</label>
+            <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold">총 {giftRecommendations.length}명</span>
+          </div>
+
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+            {giftRecommendations.map((personData, index) => (
               <button
                 key={personData.person}
                 onClick={() => setSelectedGiftPerson(personData.person)}
-                className={`p-3 rounded-2xl transition-all ${
+                className={`w-full p-4 rounded-2xl transition-all text-left relative ${
                   selectedGiftPerson === personData.person
-                    ? 'bg-purple-100 border-2 border-purple-400 shadow-md'
-                    : 'bg-gray-50 border-2 border-transparent'
+                    ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-400 shadow-lg scale-[1.02]'
+                    : 'bg-gray-50 border-2 border-transparent hover:border-gray-200 hover:shadow-md'
                 }`}
               >
-                <div className="text-2xl mb-1">{personData.personIcon}</div>
-                <div className={`text-[10px] font-bold ${
-                  selectedGiftPerson === personData.person ? 'text-purple-700' : 'text-gray-500'
-                }`}>
-                  {personData.person}
+                <div className="flex items-center gap-3">
+                  {/* 프로필 아바타 */}
+                  <div className="relative flex-shrink-0">
+                    <div className={`w-14 h-14 ${personData.avatarBg} rounded-full flex items-center justify-center overflow-hidden shadow-md border-2 ${
+                      selectedGiftPerson === personData.person ? 'border-purple-400' : 'border-white'
+                    }`}>
+                      <img src={personData.image} alt={personData.person} className="w-full h-full object-cover" />
+                    </div>
+                    {/* 우선순위 뱃지 */}
+                    {index < 3 && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-black text-white shadow-md">
+                        {index + 1}
+                      </div>
+                    )}
+                    {/* 온도 표시 */}
+                    <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-sm ${
+                      personData.temperature < 40 ? 'bg-blue-500' : personData.temperature < 60 ? 'bg-gray-400' : 'bg-orange-400'
+                    }`}>
+                      {personData.temperature < 40 ? '🧊' : personData.temperature < 60 ? '💧' : '🔥'}
+                    </div>
+                  </div>
+
+                  {/* 정보 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-black text-gray-800">{personData.person}</h3>
+                      <span className="text-[9px] text-gray-400">• {personData.lastContact}</span>
+                    </div>
+                    <p className="text-[11px] font-bold text-purple-600 mb-1 flex items-center gap-1">
+                      <Sparkles size={10} />
+                      {personData.recommendReason}
+                    </p>
+                    <p className="text-[10px] text-gray-500 truncate">{personData.recentContext}</p>
+                  </div>
+
+                  {/* 화살표 */}
+                  {selectedGiftPerson === personData.person && (
+                    <ChevronRight size={20} className="text-purple-500 flex-shrink-0 animate-pulse" />
+                  )}
                 </div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* AI 분석 인사이트 */}
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-5 rounded-3xl border border-purple-100">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-lg flex-shrink-0">
-              🤖
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xs font-bold text-purple-900 mb-2">AI 맥락 분석 결과</h3>
-              <p className="text-xs text-gray-700 leading-relaxed">
-                {currentPersonGifts?.person === '아빠' && '"무릎이 아프다"는 대화에서 건강 관심사를 파악했어요.'}
-                {currentPersonGifts?.person === '엄마' && '"동창회 모임"을 자주 가시는 점에서 외모 관리에 관심이 있으실 것 같아요.'}
-                {currentPersonGifts?.person === '동생' && '"자격증 시험 준비" 중이라 카페에서 공부하거나 집중력이 필요할 것 같아요.'}
-                {currentPersonGifts?.person === '남자친구' && '"1000일 기념일"이라는 특별한 날을 위한 의미있는 선물을 추천해요.'}
-              </p>
+        {/* AI 분석 인사이트 - 선택된 사람 */}
+        {currentPersonGifts && (
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-5 rounded-3xl border border-purple-100">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-lg flex-shrink-0">
+                🤖
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xs font-bold text-purple-900 mb-2 flex items-center gap-2">
+                  <span>{currentPersonGifts.person}님 대화 맥락 분석</span>
+                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
+                    currentPersonGifts.temperature < 40 ? 'bg-blue-100 text-blue-700' :
+                    currentPersonGifts.temperature < 60 ? 'bg-gray-100 text-gray-700' :
+                    'bg-orange-100 text-orange-700'
+                  }`}>
+                    관계온도 {currentPersonGifts.temperature}°
+                  </span>
+                </h3>
+                <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                  {currentPersonGifts.recentContext}
+                </p>
+                <div className="flex items-center gap-1 text-[10px] text-purple-600 font-bold">
+                  <MessageCircle size={12} />
+                  <span>선물 추천 {currentPersonGifts.gifts.length}개 준비됨</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 추천 선물 카드 */}
         <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-sm font-bold text-gray-800">맞춤 선물 추천</h3>
+            <span className="text-[10px] text-gray-400">AI 분석 기반</span>
+          </div>
+
           {currentPersonGifts?.gifts.map((gift) => (
-            <div key={gift.id} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-all">
-              <div className="flex gap-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl flex items-center justify-center text-4xl shadow-inner flex-shrink-0">
+            <div key={gift.id} className="bg-white p-6 rounded-3xl shadow-md border border-gray-100 hover:shadow-xl hover:scale-[1.01] transition-all">
+              <div className="flex gap-4 mb-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl flex items-center justify-center text-4xl shadow-inner flex-shrink-0 border-2 border-purple-100">
                   {gift.image}
                 </div>
                 <div className="flex-1">
@@ -619,23 +801,33 @@ const App = () => {
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-600 mb-3 leading-relaxed flex items-start gap-2">
+                  <p className="text-xs text-gray-600 mb-2 leading-relaxed flex items-start gap-2">
                     <span className="text-sm flex-shrink-0">💡</span>
-                    <span>{gift.reason}</span>
+                    <span className="font-medium">{gift.reason}</span>
                   </p>
-                  <div className="flex items-center justify-between">
-                    <div className="text-lg font-black text-[#3C1E1E]">{gift.price}</div>
-                    <div className="flex gap-2">
-                      <button className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all">
-                        상세보기
-                      </button>
-                      <button className="bg-[#FEE500] text-[#3C1E1E] px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-1">
-                        <Gift size={14} />
-                        선물하기
-                      </button>
-                    </div>
-                  </div>
+                  <div className="text-lg font-black text-[#3C1E1E]">{gift.price}</div>
                 </div>
+              </div>
+
+              {/* AI 인사이트 */}
+              <div className="bg-purple-50/50 p-3 rounded-2xl border border-purple-100 mb-3">
+                <div className="flex items-start gap-2">
+                  <Sparkles size={12} className="text-purple-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-[11px] text-gray-700 leading-relaxed italic">
+                    {gift.aiInsight}
+                  </p>
+                </div>
+              </div>
+
+              {/* 액션 버튼 */}
+              <div className="flex gap-2">
+                <button className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all">
+                  상세보기
+                </button>
+                <button className="flex-1 bg-gradient-to-r from-[#FEE500] to-[#FFD700] text-[#3C1E1E] py-3 rounded-xl text-xs font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                  <Gift size={14} />
+                  선물하기
+                </button>
               </div>
             </div>
           ))}
@@ -706,7 +898,7 @@ const App = () => {
                </span>
              </div>
              <p className="text-[13px] text-gray-700 leading-relaxed font-medium">
-               "{generateAImessage({ name: recipient, tone: recipientData[recipient].tone, context: context }, '오늘', false, variationIndex)}"
+               "{generateAImessage({ name: recipient, tone: recipientData[recipient].tone, context: context }, '오늘', variationIndex)}"
              </p>
           </div>
         </div>
@@ -749,7 +941,7 @@ const App = () => {
           {allPeople
             .filter(p => p.group === selectedGroup)
             .map((person) => (
-              <button 
+              <button
                 key={person.id}
                 onClick={() => togglePerson(person.id)}
                 className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all text-sm font-bold ${
@@ -757,7 +949,9 @@ const App = () => {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-base">{person.icon}</span>
+                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                    <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                  </div>
                   <span>{person.name}</span>
                 </div>
                 {selectedPeople.includes(person.id) && <CheckCircle2 size={16} className="text-blue-500" />}
@@ -794,7 +988,9 @@ const App = () => {
                   <div key={person.id} className="bg-blue-50/30 p-5 rounded-3xl border border-blue-100 relative shadow-sm">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm shadow-inner">{person.icon}</div>
+                        <div className="w-8 h-8 bg-white rounded-full overflow-hidden flex items-center justify-center shadow-inner">
+                          <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                        </div>
                         <span className="text-[12px] font-bold text-blue-800">{person.name}</span>
                         <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${person.tone === 'casual' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                           {person.tone === 'casual' ? '반말' : '존댓말'}
@@ -802,7 +998,7 @@ const App = () => {
                       </div>
                     </div>
                     <div className="bg-white p-4 rounded-2xl text-[13px] leading-relaxed text-gray-700 shadow-sm relative z-10 font-medium">
-                      "{generateAImessage(person, autoSeason, true)}"
+                      "{generateAImessage(person, autoSeason)}"
                       <div className="absolute -left-2 top-4 w-4 h-4 bg-white rotate-45 transform border-b border-l border-white"></div>
                     </div>
                     <div className="mt-4 flex gap-2">
